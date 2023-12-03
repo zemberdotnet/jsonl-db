@@ -1,0 +1,19 @@
+{
+  "name": "jsonl-db",
+  "version": "0.0.1",
+  "description": "A database for JSON objects",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "author": "Matthew Zember <zemberdotnet>",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts",
+    "test": "node --require ts-node/register --test **/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^18",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.2"
+  }
+}
