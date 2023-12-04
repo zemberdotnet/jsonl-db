@@ -1,5 +1,7 @@
 import { createInterface } from "node:readline/promises";
 import { createReadStream, createWriteStream } from "fs";
+import { dirname } from "path";
+import { mkdirSync } from "fs";
 
 interface JSONLinesDataBase {
   iterate: (
@@ -23,8 +25,9 @@ function JsonLinesDataBase(fp: string, objectKeyName: string) {
   // could also replace key with any to be more permissive with keys
   const objectKeyToLocation = new Map<string, [number, number]>();
 
+  // ensure the directory exists
+  mkdirSync(dirname(fp), { recursive: true });
   const stream = createWriteStream(fp);
-
   async function write(object: Record<string, any>): Promise<number> {
     return new Promise((resolve, reject) => {
       const bufferedObj = objectToJsonLines(object);
@@ -53,8 +56,8 @@ function JsonLinesDataBase(fp: string, objectKeyName: string) {
     }
 
     const stream = createReadStream(fp, { start: loc[0], end: loc[1] });
+    // TODO consume enough to actually always work
     for await (const chunk of stream) {
-      //console.log(chunk.toString());
       return JSON.parse(chunk.toString());
     }
   }
@@ -79,6 +82,13 @@ function JsonLinesDataBase(fp: string, objectKeyName: string) {
     write,
     get,
     keyName,
+    async *[Symbol.asyncIterator]() {
+      const stream = createReadStream(fp);
+      const rl = createInterface(stream);
+      for await (const line of rl) {
+        yield JSON.parse(line);
+      }
+    },
   } as JSONLinesDataBase;
 }
 
