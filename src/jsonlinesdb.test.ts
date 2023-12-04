@@ -76,6 +76,18 @@ describe("JsonLinesDataBase", () => {
     });
   });
 
+  describe("async iterator", () => {
+    test("should process all items in the database", async () => {
+      const ids = [uuid(), uuid(), uuid()];
+      await Promise.all(ids.map((e) => db.write({ id: e })));
+      const processedIds: number[] = [];
+      for await (const obj of db) {
+        processedIds.push(obj.id);
+      }
+      assert.deepStrictEqual(processedIds, ids);
+    });
+  });
+
   test("keyName should return the correct key name", () => {
     assert.strictEqual(db.keyName(), keyName);
   });

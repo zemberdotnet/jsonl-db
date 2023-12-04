@@ -10,6 +10,7 @@ interface JSONLinesDataBase {
   write: (object: Record<string, any>) => Promise<number>;
   get: (key: string) => Promise<any>;
   keyName: () => string;
+  [Symbol.asyncIterator](): AsyncIterator<any>;
 }
 
 /**
