@@ -1,12 +1,10 @@
-import { Suite } from "benchmark";
-//import { Event } from "benchmark";
 import path from "path";
 import { JsonLinesDataBase } from "../src";
-import { BENCHMARK_DATA_DIR, cleanBenchmarkDir } from "./constants";
+import { BENCHMARK_DATA_DIR } from "./constants";
 import { randomUUID as uuid } from "crypto";
-import { writeEvent } from "./util";
+import { benchmarkPersisterSuite } from "./util";
 
-const suite = new Suite();
+const suite = benchmarkPersisterSuite();
 
 const getSize = [1, 10_000, 100_0000];
 
@@ -17,7 +15,6 @@ function times<T>(n: number, fn: (n: number) => T): T[] {
   }
   return t;
 }
-
 
 // The results of these should be nearly constant for any file size
 async function main() {
@@ -34,17 +31,7 @@ async function main() {
     });
   }
 
-  suite
-    .on("cycle", function(event: any) {
-      writeEvent(process.stdout, event);
-    })
-    .on("complete", function() {
-      // @ts-ignore
-      console.log("Fastest is " + (this as any).filter("fastest").map("name"));
-      cleanBenchmarkDir();
-    })
-    // run async
-    .run({ async: true });
+  suite.run({ async: true });
 }
 
 main().catch(console.error);

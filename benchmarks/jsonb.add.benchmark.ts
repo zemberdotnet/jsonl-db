@@ -1,12 +1,10 @@
-import { Suite } from "benchmark";
-//import { Event } from "benchmark";
 import path from "path";
 import { JsonLinesDataBase } from "../src";
-import { BENCHMARK_DATA_DIR, cleanBenchmarkDir } from "./constants";
+import { BENCHMARK_DATA_DIR } from "./constants";
 import { randomUUID as uuid } from "crypto";
-import { writeEvent } from "./util";
+import { benchmarkPersisterSuite } from "./util";
 
-const suite = new Suite();
+const suite = benchmarkPersisterSuite();
 
 const writeSize = [1, 10_000, 100_000, 1_000_000];
 
@@ -28,14 +26,4 @@ for (const size of writeSize) {
   });
 }
 
-suite
-  .on("cycle", function(event: any) {
-    writeEvent(process.stdout, event);
-  })
-  .on("complete", function() {
-    // @ts-ignore
-    console.log("Fastest is " + (this as any).filter("fastest").map("name"));
-    cleanBenchmarkDir();
-  })
-  // run async
-  .run({ async: true });
+suite.run({ async: true });
