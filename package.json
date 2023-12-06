@@ -11,12 +11,15 @@
     "benchmark:record": "for file in benchmarks/*.benchmark.ts; do echo $file && [ -f $file ] && GIT_COMMIT=$(git rev-parse HEAD) node --require ts-node/register \"$file\"; done",
     "build": "tsc",
     "start": "ts-node src/index.ts",
-    "test": "node --require ts-node/register --test **/*.test.ts"
+    "test": "node --require ts-node/register --test **/*.test.ts",
+    "thing": "node --require ts-node/register expect.ts"
   },
   "devDependencies": {
     "@types/benchmark": "^2.1.5",
     "@types/node": "^18",
     "benchmark": "^2.1.4",
+    "expect": "^29.7.0",
+    "jest-extended": "^4.0.2",
     "ts-node": "^10.9.1",
     "typescript": "^5.3.2"
   }

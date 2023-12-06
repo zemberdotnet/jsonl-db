@@ -3,7 +3,7 @@ import { rm } from "node:fs/promises";
 import { dirname } from "node:path";
 import { describe, test, beforeEach, after } from "node:test";
 import { randomUUID as uuid } from "crypto";
-import assert from "node:assert";
+import expect from "expect";
 
 describe("JsonLinesDataBase", () => {
   const filePath = `testdata/${uuid()}`;
@@ -27,7 +27,7 @@ describe("JsonLinesDataBase", () => {
       const obj = { id: uuid(), name: "Test" };
       const byteLength = await db.write(obj);
 
-      assert.strictEqual(byteLength, 60);
+      expect(byteLength).toBe(60);
     });
 
     test("should write multiple times and return correct byte length each time", async () => {
@@ -35,8 +35,8 @@ describe("JsonLinesDataBase", () => {
       const obj2 = { id: uuid(), name: "Test" };
       const b1 = await db.write(obj1);
       const b2 = await db.write(obj2);
-      assert.strictEqual(b1, 60);
-      assert.strictEqual(b2, 60);
+      expect(b1).toBe(60);
+      expect(b2).toBe(60);
     });
 
     test("should handle large objects", async () => {
@@ -53,12 +53,12 @@ describe("JsonLinesDataBase", () => {
       const obj = { id: uuid(), name: "Test2" };
       await db.write(obj);
       const retrievedObj = await db.get(obj.id);
-      assert.deepStrictEqual(retrievedObj, obj);
+      expect(retrievedObj).toStrictEqual(obj);
     });
 
     test("get should return undefined for non-existent data", async () => {
       const retrievedObj = await db.get("not-real-key");
-      assert.strictEqual(retrievedObj, undefined);
+      expect(retrievedObj).toBe(undefined);
     });
   });
 
@@ -72,7 +72,7 @@ describe("JsonLinesDataBase", () => {
         processedIds.push(obj.id);
       });
 
-      assert.deepStrictEqual(processedIds, [4, 5]);
+      expect(processedIds).toStrictEqual([4, 5]);
     });
   });
 
@@ -84,11 +84,11 @@ describe("JsonLinesDataBase", () => {
       for await (const obj of db) {
         processedIds.push(obj.id);
       }
-      assert.deepStrictEqual(processedIds, ids);
+      expect(processedIds).toStrictEqual(ids);
     });
   });
 
   test("keyName should return the correct key name", () => {
-    assert.strictEqual(db.keyName(), keyName);
+    expect(db.keyName()).toBe(keyName);
   });
 });
