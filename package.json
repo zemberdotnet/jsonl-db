@@ -11,7 +11,10 @@
     "benchmark:record": "for file in benchmarks/*.benchmark.ts; do echo $file && [ -f $file ] && GIT_COMMIT=$(git rev-parse HEAD) node --require ts-node/register \"$file\"; done",
     "build": "tsc",
     "start": "ts-node src/index.ts",
-    "test": "node --require ts-node/register --test **/*.test.ts",
+    "test": "yarn --silent test:unit",
+    "test:unit": "node --require ts-node/register --test **/*.unit.test.ts",
+    "test:limit": "node --require ts-node/register --test **/*.limits.test.ts",
+    "test:brk": "node --inspect-brk --require ts-node/register --test **/*.test.ts",
     "thing": "node --require ts-node/register expect.ts"
   },
   "devDependencies": {

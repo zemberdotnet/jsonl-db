@@ -2,3 +2,4 @@ node_modules
 benchmarkdata
 testdata
 dist
+yarn-error.log

@@ -3,39 +3,41 @@ import { createReadStream, createWriteStream } from "fs";
 import { dirname } from "path";
 import { mkdirSync } from "fs";
 
-interface JSONLinesDataBase {
+interface JSONLinesDatabase {
   iterate: (
     cb: (obj: Record<string, any>) => Promise<void> | void,
   ) => Promise<void>;
-  write: (object: Record<string, any>) => Promise<number>;
+  write: (key: any, object: Record<string, any>) => Promise<number>;
   get: (key: string) => Promise<any>;
-  keyName: () => string;
+  has: (key: string) => boolean;
   [Symbol.asyncIterator](): AsyncIterator<any>;
 }
 
 /**
- * `JsonLinesDataBase` is a file-based database for storing JSON objects.
+ * `JSONLinesDatabase` is a file-based database for storing JSON objects.
  *
  * Every object stored must have a unique key. The name of the key is given by
  *
  */
-function JsonLinesDataBase(fp: string, objectKeyName: string) {
+function JSONLinesDatabase(fp: string) {
   let start = 0;
 
   // replace with elegant pair?
-  // could also replace key with any to be more permissive with keys
-  const objectKeyToLocation = new Map<string, [number, number]>();
+  const objectKeyToLocation = new Map<any, [number, number]>();
 
   // ensure the directory exists
   mkdirSync(dirname(fp), { recursive: true });
   const stream = createWriteStream(fp);
-  async function write(object: Record<string, any>): Promise<number> {
+
+  async function write(
+    key: unknown,
+    object: Record<string, any>,
+  ): Promise<number> {
     return new Promise((resolve, reject) => {
       const bufferedObj = objectToJsonLines(object);
       stream.write(bufferedObj, (err) => {
         if (!err) {
           // reusing keys is undefined behavior
-          const key = object[objectKeyName];
           objectKeyToLocation.set(key, [
             start,
             start + bufferedObj.byteLength - 1,
@@ -57,10 +59,15 @@ function JsonLinesDataBase(fp: string, objectKeyName: string) {
     }
 
     const stream = createReadStream(fp, { start: loc[0], end: loc[1] });
-    // TODO consume enough to actually always work
+    const chunks: Buffer[] = [];
     for await (const chunk of stream) {
-      return JSON.parse(chunk.toString());
+      chunks.push(chunk);
     }
+    return JSON.parse(Buffer.concat(chunks).toString());
+  }
+
+  function has(key: string): boolean {
+    return objectKeyToLocation.has(key);
   }
 
   async function iterate(
@@ -74,15 +81,11 @@ function JsonLinesDataBase(fp: string, objectKeyName: string) {
     }
   }
 
-  function keyName() {
-    return objectKeyName;
-  }
-
   return {
     iterate,
     write,
+    has,
     get,
-    keyName,
     async *[Symbol.asyncIterator]() {
       const stream = createReadStream(fp);
       const rl = createInterface(stream);
@@ -90,11 +93,11 @@ function JsonLinesDataBase(fp: string, objectKeyName: string) {
         yield JSON.parse(line);
       }
     },
-  } as JSONLinesDataBase;
+  } as JSONLinesDatabase;
 }
 
 function objectToJsonLines(o: Object): Buffer {
   return Buffer.from(JSON.stringify(o) + "\n");
 }
 
-export { JsonLinesDataBase, JSONLinesDataBase };
+export { JSONLinesDatabase };
